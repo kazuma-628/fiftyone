@@ -10,8 +10,10 @@ import { groupContainer, mainGroup } from "./Group.module.css";
 import { GroupCarousel } from "./GroupCarousel";
 import { GroupImageVideoSample } from "./GroupImageVideoSample";
 import GroupSample3d from "./GroupSample3d";
+import GroupBev from "./GroupBev";
 
 const DEFAULT_SPLIT_VIEW_LEFT_WIDTH = "800";
+const DEFAULT_BEV_HEIGHT = "200";
 
 export const GroupView = () => {
   const theme = useTheme();
@@ -20,9 +22,15 @@ export const GroupView = () => {
   const isCarouselVisible = useRecoilValue(fos.groupMediaIsCarouselVisible);
   const is3dVisible = useRecoilValue(fos.groupMediaIs3dVisible);
   const isMainVisible = useRecoilValue(fos.groupMediaIsMainVisible);
+  const isBevVisible = useRecoilValue(fos.groupMediaIsBevVisible);
+  const hasBevSlice = useRecoilValue(fos.hasBevSlice);
   const [width, setWidth] = useBrowserStorage(
     "group-modal-split-view-width",
     DEFAULT_SPLIT_VIEW_LEFT_WIDTH
+  );
+  const [bevHeight, setBevHeight] = useBrowserStorage(
+    "group-modal-bev-height",
+    DEFAULT_BEV_HEIGHT
   );
 
   const shouldRender3DBelow = useMemo(() => {
@@ -91,7 +99,60 @@ export const GroupView = () => {
             {shouldRender3DBelow && <GroupSample3d />}
           </Resizable>
         )}
-        {!shouldRender3DBelow && is3dVisible && <GroupSample3d />}
+        {!shouldRender3DBelow && is3dVisible && (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              flexGrow: 1,
+              height: "100%",
+              overflow: "hidden",
+            }}
+          >
+            {/* BEV section - shown above 3D when BEV slice exists */}
+            {isBevVisible && hasBevSlice && (
+              <Resizable
+                size={{
+                  width: "100%",
+                  height: bevHeight,
+                }}
+                minHeight={100}
+                maxHeight="50%"
+                enable={{
+                  top: false,
+                  right: false,
+                  bottom: true,
+                  left: false,
+                  topRight: false,
+                  bottomRight: false,
+                  bottomLeft: false,
+                  topLeft: false,
+                }}
+                onResizeStop={(_, __, ___, { height: delta }) =>
+                  setBevHeight(String(Number(bevHeight) + delta))
+                }
+                style={{
+                  position: "relative",
+                  borderBottom: `1px solid ${theme.primary.plainBorder}`,
+                  overflow: "hidden",
+                  flexShrink: 0,
+                }}
+              >
+                <GroupBev />
+              </Resizable>
+            )}
+            {/* 3D section */}
+            <div
+              style={{
+                flexGrow: 1,
+                minHeight: 0,
+                overflow: "hidden",
+              }}
+            >
+              <GroupSample3d />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

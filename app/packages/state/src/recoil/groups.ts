@@ -546,3 +546,49 @@ export const groupView = selector<State.Stage[]>({
       (stage) => stage._cls !== viewAtoms.GROUP_BY_VIEW_STAGE
     ),
 });
+
+// BEV (Bird's Eye View) settings
+export const groupMediaIsBevVisibleSetting = atom<boolean>({
+  key: "groupMediaIsBevVisibleSetting",
+  default: true,
+  effects: [
+    getBrowserStorageEffectForKey("groupMediaIsBevVisible", {
+      sessionStorage: true,
+      valueClass: "boolean",
+    }),
+  ],
+});
+
+export const groupMediaIsBevVisible = selector<boolean>({
+  key: "groupMediaIsBevVisible",
+  get: ({ get }) => {
+    const isImaVidInNestedGroup =
+      get(shouldRenderImaVidLooker(true)) && get(isNestedDynamicGroup);
+    return get(groupMediaIsBevVisibleSetting) && !isImaVidInNestedGroup;
+  },
+});
+
+// BEV slice name constant
+export const BEV_SLICE_NAME = "BEV";
+
+// Check if BEV slice exists in the group
+export const hasBevSlice = selector<boolean>({
+  key: "hasBevSlice",
+  get: ({ get }) => {
+    const slices = get(groupSlices);
+    return slices.includes(BEV_SLICE_NAME);
+  },
+});
+
+// Get BEV sample from the current group
+export const bevSample = selector<ModalSample | null>({
+  key: "bevSample",
+  get: ({ get }) => {
+    if (!get(hasBevSlice)) {
+      return null;
+    }
+    const samples = get(groupSamples({ slices: [BEV_SLICE_NAME], count: 1 }));
+    return samples?.[0] ?? null;
+  },
+});
+

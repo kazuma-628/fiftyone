@@ -25,10 +25,16 @@ export default ({
   const [isMainVisible, setIsMainVisible] = useRecoilState(
     fos.groupMediaIsMainVisibleSetting
   );
+  const [isBevVisible, setIsBevVisible] = useRecoilState(
+    fos.groupMediaIsBevVisibleSetting
+  );
   const isNestedDynamicGroup = useRecoilValue(fos.isNestedDynamicGroup);
   const shouldRenderImaVid = useRecoilValue(fos.shouldRenderImaVidLooker(true));
   const dynamicGroupsViewMode = useRecoilValue(fos.dynamicGroupsViewMode(true));
   const hasGroupSlices = useRecoilValue(fos.hasGroupSlices);
+  
+  // Check if BEV slice exists
+  const hasBevSlice = useRecoilValue(fos.hasBevSlice);
 
   const isSequentialAccessAllowed =
     isNestedDynamicGroup ||
@@ -50,6 +56,19 @@ export default ({
             isImavidInNestedGroup || (!isMainVisible && !isCarouselVisible)
           }
           setValue={(value) => setIsSlotVisible(value)}
+        />
+      );
+    }
+    
+    // Add BEV checkbox if BEV slice exists
+    if (hasBevSlice && threeDSliceExists) {
+      toReturn.push(
+        <Checkbox
+          key="checkbox-bev"
+          name={"BEV (Bird's Eye View)"}
+          value={isBevVisible}
+          muted={isImavidInNestedGroup || !isSlotVisible}
+          setValue={(value) => setIsBevVisible(value)}
         />
       );
     }
@@ -90,10 +109,13 @@ export default ({
     isCarouselVisible,
     isMainVisible,
     isSlotVisible,
+    isBevVisible,
+    hasBevSlice,
     setIsMainVisible,
     isImavidInNestedGroup,
     setIsCarouselVisible,
     setIsSlotVisible,
+    setIsBevVisible,
   ]);
 
   return (

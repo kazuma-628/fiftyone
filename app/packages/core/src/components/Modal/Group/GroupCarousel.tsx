@@ -19,14 +19,18 @@ const groupCarouselSlices = selector<string[]>({
     const slices = get(fos.groupSlices);
 
     if (mediaTypesSet.size === 1 && setContains3d(mediaTypesSet)) {
-      return slices;
+      // Exclude BEV slice from carousel even when only 3D slices exist
+      return slices.filter((slice) => slice !== fos.BEV_SLICE_NAME);
     }
 
     const mediaTypes = Object.fromEntries(
       get(fos.groupMediaTypes).map(({ name, mediaType }) => [name, mediaType])
     );
 
-    return slices.filter((slice) => !is3d(mediaTypes[slice]));
+    // Exclude 3D slices and BEV slice from carousel
+    return slices.filter(
+      (slice) => !is3d(mediaTypes[slice]) && slice !== fos.BEV_SLICE_NAME
+    );
   },
 });
 
